@@ -1,6 +1,6 @@
 .PHONY: compile xref eunit clean doc check make
 
-all: compile #xref eunit
+all: compile
 
 # for busy typos
 m: all
@@ -11,11 +11,11 @@ make: all
 compile:
 	@./rebar compile
 
-xref:
+xref: compile
 	@./rebar xref
 
-eunit:
-	@./rebar eunit
+eunit: compile
+	@./rebar eunit skip_deps=true
 
 clean:
 	@./rebar clean

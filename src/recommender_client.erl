@@ -8,7 +8,7 @@
 
 % TODO: enable services  recommender
 -export([set_config/3, get_config/2, clear_row/3, update_row/4, clear/2, complete_row_from_id/3, complete_row_from_data/3, similar_row_from_id/4, similar_row_from_data/4, decode_row/3, get_all_rows/2, similarity/4, l2norm/3, save/3, load/3, get_status/2]).
--export([connect/2, close/1, code_change/3, handle_call/3, terminate/2]). %fixed
+-export([connect/2, close/1]). %fixed
 
 -spec set_config(mprc:mprc(), string(), config_data()) -> {boolean(), mprc:mprc()}|{error, term()}.
 set_config(MPRC, Name, C) ->
@@ -83,12 +83,3 @@ connect(Addr, Port)->
 -spec close(mprc:mprc())->ok.
 close(MPRC)->
   mprc:close(MPRC).
-
-code_change(_,_,State)-> % fixed
-    {ok, State}.
-
-handle_call(_,_,State)->
-    {ok, State}.
-
-terminate(_,_)->
-    ok.

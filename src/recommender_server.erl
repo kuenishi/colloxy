@@ -11,26 +11,38 @@
 
 -record(state, {}).
 
--export([init/1]).
+-export([init/1, code_change/3, handle_call/3, terminate/2]). % fixed
 -export([set_config/2, get_config/1, clear_row/2, update_row/3, clear/1, complete_row_from_id/2, complete_row_from_data/2, similar_row_from_id/3, similar_row_from_data/3, decode_row/2, get_all_rows/1, similarity/3, l2norm/2, save/2, load/2, get_status/1]).
 
 init(_Argv)-> {ok, #state{}}.
+
+code_change(_,_,State)-> % fixed
+    {ok, State}.
+
+handle_call(_,_,State)->
+    {ok, State}.
+
+terminate(_,_)->
+    ok.
                             
 % TODO enable recommender
 
 -spec set_config(string(), config_data()) -> boolean().
 set_config(Name, C) ->
   Reply = ok,  % write your code here
+    Name, C,
   {reply, Reply}.
 
 -spec get_config(string()) -> config_data().
 get_config(Name) ->
   Reply = ok,  % write your code here
+    Name,
   {reply, Reply}.
 
 -spec clear_row(string(), string()) -> boolean().
 clear_row(Name, Id) ->
   Reply = ok,  % write your code here
+    Name,
   {reply, Reply}.
 
 -spec update_row(string(), string(), datum()) -> boolean().

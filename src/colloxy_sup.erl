@@ -24,5 +24,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    AChild = ?CHILD(colloxy_mochi, supervisor),
-    {ok, { {one_for_one, 5, 10}, [AChild]} }.
+   AChild = ?CHILD(colloxy_mochi, supervisor),
+   {ok, { {one_for_one, 5, 10}, [AChild]} }.
+%    {ok, { {one_for_one, 5, 10}, []} }.

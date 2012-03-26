@@ -14,3 +14,10 @@ start(_StartType, _StartArgs) ->
 
 stop(_State) ->
     ok.
+
+-include_lib("eunit/include/eunit.hrl").
+
+start_stop_test()->
+    ok = application:start(colloxy),
+    ok = application:stop(colloxy).
+
