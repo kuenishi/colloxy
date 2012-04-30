@@ -28,12 +28,24 @@ loop(Req, _) ->
 %    "/" ++ Path = Req:get(path),
     try
 	error_logger:info_report("new connection!"),
-	{ok, RequestBin} = make_request_binary(Req),
-	ok = inet:setopts(Req:get(socket), [{packet,raw},binary,{active,false}]),
-        % Scheme = Req:get(scheme), % http | https
-	{ok, Socket} = make_socket(Req:get_primary_header_value("host")),
-	do_http_req(Socket, RequestBin, Req:get(socket)),
-	my_loop(Req:get(socket), <<>>)
+	case Req:get(path) of
+%	    {scheme, Host, "443"} ->
+%		{ok, Socket} = ssl:connect(Host, 443, [binary,{packet,raw},{active,true}]),
+	    {scheme, Host, Port0} ->
+		Port = list_to_integer(Port0),
+		{ok, Socket} = gen_tcp:connect(Host, Port, [binary,{packet,raw},{active,true}]),
+		ok = inet:setopts(Req:get(socket), [{packet,raw},binary,{active,false}]),
+		colloxy_util:tcp_pipe(Socket, Req:get(socket));
+		
+	    _ ->
+		
+		{ok, RequestBin} = make_request_binary(Req),
+		ok = inet:setopts(Req:get(socket), [{packet,raw},binary,{active,false}]),
+						% Scheme = Req:get(scheme), % http | https
+		{ok, Socket} = make_socket(Req:get_primary_header_value("host")),
+		do_http_req(Socket, RequestBin, Req:get(socket)),
+		my_loop(Req:get(socket), <<>>)
+	end
 
     catch
 	exit:normal ->
