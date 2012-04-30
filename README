@@ -1,0 +1,14 @@
+
+status
+------
+
+- normal web browsing seems working
+
+tasks
+-----
+
+- CONNECT method
+- ssl support
+- refactor
+- unit tests
+- plugin architecture
