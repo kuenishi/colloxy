@@ -1,12 +1,9 @@
+%% -*- erlang -*-
 {application, colloxy,
- [
-  {description, ""},
-  {vsn, "1"},
+ [{description, "colloxy"},
+  {vsn, "0.1"},
+  {modules, []},
   {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { colloxy_app, []}},
-  {env, []}
- ]}.
+  {mod, {'colloxy_app', []}},
+  {env, []},
+  {applications, [kernel, stdlib, crypto]}]}.

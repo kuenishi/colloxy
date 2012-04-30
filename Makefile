@@ -1,34 +1,29 @@
-.PHONY: compile xref eunit clean doc check make
 
-all: compile
+PREFIX:=../
+DEST:=$(PREFIX)$(PROJECT)
 
-# for busy typos
-m: all
-ma: all
-mak: all
-make: all
+REBAR=./rebar
 
-compile:
-	@./rebar compile
+all:
+	@$(REBAR) get-deps compile
 
-xref: compile
-	@./rebar xref
+edoc:
+	@$(REBAR) doc
 
-eunit: compile
-	@./rebar eunit skip_deps=true
+test:
+	@rm -rf .eunit
+	@mkdir -p .eunit
+	@$(REBAR) skip_deps=true eunit
 
 clean:
-	@./rebar clean
+	@$(REBAR) clean
 
-doc:
-	@./rebar doc
+build_plt:
+	@$(REBAR) build-plt
 
-check: compile
-#	@echo "you need ./rebar build-plt before make check"
-#	@./rebar build-plt
-	@./rebar check-plt
-	@./rebar dialyze
+dialyzer:
+	@$(REBAR) dialyze
 
-crosslang:
-	@echo "do ERL_LIBS=../ before you make crosslang or fail"
-	cd test && make crosslang
+app:
+	@$(REBAR) create template=mochiwebapp dest=$(DEST) appid=$(PROJECT)
+
