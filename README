@@ -14,8 +14,7 @@ status
 tasks
 -----
 
-- ssl support ?
-- refactor
+- authorization?
 - unit tests
 - plugin architecture
 
