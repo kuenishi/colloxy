@@ -121,6 +121,8 @@ get_size_from_binary(_, _, _) -> error.
     %io:format("connecting to ~s:~w ..\n", [Host,Port]),
     % TODO: copy options from Socket (inet6, ssl and so on)
 do_http_req(Socket, RequestBin, ReturnSocket)->
+    
+    io:format("new request!!===============  (~p) ~n~s~n", [self(), binary_to_list(RequestBin)]),
 
     case gen_tcp:send(Socket, RequestBin) of
 	ok ->
@@ -128,31 +130,35 @@ do_http_req(Socket, RequestBin, ReturnSocket)->
 	    {ok, Rest0, Total0, _Headers0} = get_first_line(Socket, <<>>),
 	    {ok, Rest1, Total1, Headers1} = get_header(Socket, Rest0, Total0, []),
 
-	    error_logger:info_report("got response header."),
-	    io:format("~s~n", [binary_to_list(Total1)]),
+
+	    % send back the header
+	    HeaderSize = byte_size(Total1) - byte_size(Rest1),
+	    <<HeaderBin:HeaderSize/binary, Rest1/binary>> = Total1,
+
+	    %error_logger:info_report("got response header."),
+	    io:format(">>> got response:~n~s", [binary_to_list(HeaderBin)]),
+	    io:format("<<~w bytes>>~n", [byte_size(Rest1)]),
+
+	    ok = gen_tcp:send(ReturnSocket, HeaderBin),
 
 	    case get_content_length(Headers1) of
 		{ok, ContentLength}->
-		    ?debugHere,
 		    transfer_all(Socket, ReturnSocket,
-				 ContentLength + byte_size(Total1) - byte_size(Rest1), Total1);
+				 ContentLength, Rest1);
 		_ -> ok
 	    end,
 	    case get_chunked(Headers1) of
 		chunked ->
-		    HeaderSize = byte_size(Total1) - byte_size(Rest1),
-		    <<HeaderBin:HeaderSize/binary, Rest1/binary>> = Total1,
-		    ok = gen_tcp:send(ReturnSocket, HeaderBin),
-		    ?debugHere,
 		    process_chunked(Socket, ReturnSocket, Rest1);
 		_ -> ok
 	    end,
 	    case get_connection(Headers1) of
 		none -> ok;
 		close ->
-		    ?debugHere,
 		    gen_tcp:close(Socket)
-	    end;
+	    end,
+	    error_logger:info_report("===========================http req-res done (~p).",
+				     [self()]);
 	    
 	_Other ->
 	    error_logger:error_report(_Other)
@@ -191,14 +197,14 @@ get_connection([]) -> none;
 get_connection([{http_header,_,'Connection',_,<<"close">>}|_]) -> close;
 get_connection([_|L]) -> get_connection(L).
 
-get_encoding([]) -> none;
-get_encoding([{http_header,_,'Content-Encoding',_,Value}|_]) ->
-    ?debugVal(Value),
-    case Value of
-	<<"gzip">> -> gzip;
-	_ -> none
-    end;
-get_encoding([_|L]) -> get_encoding(L).    
+%% get_encoding([]) -> none;
+%% get_encoding([{http_header,_,'Content-Encoding',_,Value}|_]) ->
+%%     ?debugVal(Value),
+%%     case Value of
+%% 	<<"gzip">> -> gzip;
+%% 	_ -> none
+%%     end;
+%% get_encoding([_|L]) -> get_encoding(L).    
 
 
 get_content_length([])-> {error, not_found};
@@ -280,8 +286,6 @@ my_loop(ReturnSocket, RestBin0)->
 	{ok, Rest0, Total0, _Headers0} ->
 	    {ok, _Rest1, Total1, Headers1} = get_header(ReturnSocket, Rest0, Total0, []),
 
-	    io:format("new request!!=============== ~n~s~n", [binary_to_list(Total1)]),
-	    
 	    {ok, HostPort} = get_host(Headers1),
 	    {ok, Socket} = make_socket(HostPort),
 	    

@@ -6,4 +6,4 @@
   {registered, []},
   {mod, {'colloxy_app', []}},
   {env, []},
-  {applications, [kernel, stdlib, crypto, ssl, public_key]}]}.
+  {applications, [kernel, stdlib, crypto]}]}.

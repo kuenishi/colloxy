@@ -9,11 +9,11 @@ status
 
 - normal web browsing seems working
 - CONNECT method
+- sth slow because of waiting sth, -> {error, einval} ... it was because of not returning the header.
 
 tasks
 -----
 
-- sth slow because of waiting sth, -> {error, einval}
 - ssl support ?
 - refactor
 - unit tests
