@@ -14,6 +14,7 @@
 %% External API
 
 start(Options) ->
+    colloxy_filter:init(),
     {DocRoot, Options1} = get_option(docroot, Options),
     Loop = fun (Req) ->
                    ?MODULE:loop(Req, DocRoot)
@@ -32,6 +33,15 @@ loop(Req, _) ->
 	    {scheme, Host, Port0} ->
 		
 		% TODO: do some filter logic here.
+		case colloxy_filter:check(Host,"/") of
+		    false ->
+			Req:ok({404, <<"filtered">>}),
+			exit(normal);
+		    unknown ->
+			% ask server here
+			ok;
+		    _ -> ok
+		end,
 
 		Req:ok({200, <<"">>}),
 		Port = list_to_integer(Port0),
