@@ -6,5 +6,4 @@ doc/edoc-info
 doc/erlang.png
 doc/stylesheet.css
 *~
-OMake*.omc
-.omakedb*
+deps
