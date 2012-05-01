@@ -25,20 +25,14 @@ stop() ->
 
 %loop(Req, DocRoot) ->
 loop(Req, _) ->
-%    "/" ++ Path = Req:get(path),
     try
 	error_logger:info_report("new connection!"),
 	case Req:get(path) of
-	    %% {scheme, Host, "443"} ->
-	    %% 	?debugVal(Req:get(socket)),
-	    %% 	{ok, Socket} = ssl:connect(Host, 443, [binary,{packet,raw},{active,true}]),
-	    %% 	ok = inet:setopts(Req:get(socket), [binary,{packet,raw},{active,true}]),
-	    %% 	?debugVal(Socket),
-	    %% 	Req:ok({200, <<"">>}),
-	    %% 	colloxy_util:ssl_pipe(Socket, Req:get(socket));
 
 	    {scheme, Host, Port0} ->
-		?debugHere,
+		
+		% TODO: do some filter logic here.
+
 		Req:ok({200, <<"">>}),
 		Port = list_to_integer(Port0),
 		{ok, Socket} = gen_tcp:connect(Host, Port, [binary,{packet,raw},{active,true}]),
@@ -47,6 +41,8 @@ loop(Req, _) ->
 		
 	    _ ->
 		
+		% TODO: do some filter logic here.
+
 		{ok, RequestBin} = make_request_binary(Req),
 		ok = inet:setopts(Req:get(socket), [{packet,raw},binary,{active,false}]),
 						% Scheme = Req:get(scheme), % http | https
@@ -60,12 +56,11 @@ loop(Req, _) ->
 	    Req:cleanup();
         Type:What ->
             Report = ["web request failed",
-                      %{path, Path},
-                      {type, Type}, {what, What},
+                      {path, Req:get(path)},
+		      {type, Type}, {what, What},
                       {trace, erlang:get_stacktrace()}],
             error_logger:error_report(Report),
-	    %inet:setopts(Req:get(socket), [{packet,http}]),
-            %% NOTE: mustache templates need \ because they are not awesome.
+
             Req:respond({500, [{"Content-Type", "text/plain"}],
                          "request failed, sorry\n"})
     end.
@@ -99,7 +94,7 @@ make_request_binary(Req)->
 	       BinHeaders/binary>>,
     
     io:format("~s\n", [binary_to_list(ReqBin)]),
-    io:format("sending ~w bytes ..\n", [ byte_size(ReqBin) ]),
+    % io:format("sending ~w bytes ..\n", [ byte_size(ReqBin) ]),
     {ok, ReqBin}.
     
 
@@ -117,19 +112,14 @@ get_size_from_binary(D, I, <<J/unsigned-integer, Rest/binary>>)->
     get_size_from_binary(D+1, I*16+hex2int(J), Rest);
 get_size_from_binary(_, _, _) -> error.
 
-
-    %io:format("connecting to ~s:~w ..\n", [Host,Port]),
-    % TODO: copy options from Socket (inet6, ssl and so on)
 do_http_req(Socket, RequestBin, ReturnSocket)->
     
     io:format("new request!!===============  (~p) ~n~s~n", [self(), binary_to_list(RequestBin)]),
 
     case gen_tcp:send(Socket, RequestBin) of
 	ok ->
-	    %Res = transfer_all(Socket, Req:get(socket), <<>>),
 	    {ok, Rest0, Total0, _Headers0} = get_first_line(Socket, <<>>),
 	    {ok, Rest1, Total1, Headers1} = get_header(Socket, Rest0, Total0, []),
-
 
 	    % send back the header
 	    HeaderSize = byte_size(Total1) - byte_size(Rest1),
@@ -181,7 +171,6 @@ process_chunked(Socket, ReturnSocket, Binary0)->
 	    process_chunked(Socket, ReturnSocket, <<Binary0/binary, Binary/binary>>);
 
 	{StringSize, ZipSize} ->
-	    % ?debugVal({StringSize, ZipSize}),
 	    TrimSize = StringSize+ZipSize,
 	    <<Binary:TrimSize/binary, 13, 10, Rest0/binary>> = Binary0,
 	    ok = gen_tcp:send(ReturnSocket, Binary),
@@ -196,16 +185,6 @@ get_chunked([_|L]) -> get_chunked(L).
 get_connection([]) -> none;
 get_connection([{http_header,_,'Connection',_,<<"close">>}|_]) -> close;
 get_connection([_|L]) -> get_connection(L).
-
-%% get_encoding([]) -> none;
-%% get_encoding([{http_header,_,'Content-Encoding',_,Value}|_]) ->
-%%     ?debugVal(Value),
-%%     case Value of
-%% 	<<"gzip">> -> gzip;
-%% 	_ -> none
-%%     end;
-%% get_encoding([_|L]) -> get_encoding(L).    
-
 
 get_content_length([])-> {error, not_found};
 get_content_length([{http_header,_,'Content-Length',_,Value}|_])->
@@ -285,6 +264,8 @@ my_loop(ReturnSocket, RestBin0)->
 	{error, closed} -> exit(normal);
 	{ok, Rest0, Total0, _Headers0} ->
 	    {ok, _Rest1, Total1, Headers1} = get_header(ReturnSocket, Rest0, Total0, []),
+
+            % TODO: do some filter logic here.
 
 	    {ok, HostPort} = get_host(Headers1),
 	    {ok, Socket} = make_socket(HostPort),
