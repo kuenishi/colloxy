@@ -8,12 +8,13 @@ status
 ------
 
 - normal web browsing seems working
+- CONNECT method
 
 tasks
 -----
 
-- CONNECT method
-- ssl support
+- sth slow because of waiting sth, -> {error, einval}
+- ssl support ?
 - refactor
 - unit tests
 - plugin architecture

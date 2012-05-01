@@ -29,12 +29,20 @@ loop(Req, _) ->
     try
 	error_logger:info_report("new connection!"),
 	case Req:get(path) of
-%	    {scheme, Host, "443"} ->
-%		{ok, Socket} = ssl:connect(Host, 443, [binary,{packet,raw},{active,true}]),
+	    %% {scheme, Host, "443"} ->
+	    %% 	?debugVal(Req:get(socket)),
+	    %% 	{ok, Socket} = ssl:connect(Host, 443, [binary,{packet,raw},{active,true}]),
+	    %% 	ok = inet:setopts(Req:get(socket), [binary,{packet,raw},{active,true}]),
+	    %% 	?debugVal(Socket),
+	    %% 	Req:ok({200, <<"">>}),
+	    %% 	colloxy_util:ssl_pipe(Socket, Req:get(socket));
+
 	    {scheme, Host, Port0} ->
+		?debugHere,
+		Req:ok({200, <<"">>}),
 		Port = list_to_integer(Port0),
 		{ok, Socket} = gen_tcp:connect(Host, Port, [binary,{packet,raw},{active,true}]),
-		ok = inet:setopts(Req:get(socket), [{packet,raw},binary,{active,false}]),
+		ok = inet:setopts(Req:get(socket), [{packet,raw},binary,{active,true}]),
 		colloxy_util:tcp_pipe(Socket, Req:get(socket));
 		
 	    _ ->

@@ -19,8 +19,10 @@ ensure_started(App) ->
 %% @spec start() -> ok
 %% @doc Start the colloxy server.
 start() ->
-    colloxy_deps:ensure(),
     ensure_started(crypto),
+    ensure_started(public_key),
+    ensure_started(ssl),
+    colloxy_deps:ensure(),
     application:start(colloxy).
 
 

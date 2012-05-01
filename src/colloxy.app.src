@@ -1,9 +1,9 @@
 %% -*- erlang -*-
 {application, colloxy,
- [{description, "colloxy"},
+ [{description, "colloxy: collaborative web proxy"},
   {vsn, "0.1"},
   {modules, []},
   {registered, []},
   {mod, {'colloxy_app', []}},
   {env, []},
-  {applications, [kernel, stdlib, crypto]}]}.
+  {applications, [kernel, stdlib, crypto, ssl, public_key]}]}.
